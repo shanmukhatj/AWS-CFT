@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Root Stack Template
+
+Parameters:
+  MyKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+
+  VpcBlock:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Tange
+      
+  Subnet01Block:
+    Type: String
+    Default: 10.0.1.0/24
+    Description: CidrBlock for Subnet 01 within the VPC.    
+
+Resources:
+
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://nestedbucketvpc01.s3.ap-south-1.amazonaws.com/NestedStack-VPC.yml
+      Parameters:  
+        VpcBlock: !Ref VpcBlock
+        Subnet01Block: !Ref Subnet01Block 
+      TimeoutInMinutes: 5            
+
+  SecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://nestsg02.s3.ap-south-1.amazonaws.com/sgnested+(1).yml
+      Parameters:
+        VPCId: !GetAtt VPCStack.Outputs.VpcId
+      TimeoutInMinutes: 5        
+
+  MyVMInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-011c99152163a87ae
+      InstanceType: t2.micro
+      KeyName: !Ref MyKeyName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: !GetAtt VPCStack.Outputs.Subnet01Id
+          GroupSet:
+            - !GetAtt SecurityGroupStack.Outputs.DevSGGroupId
+      UserData: 
+        Fn::Base64: |
+          #!/bin/bash
+          cd /tmp
+          sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          sudo systemctl enable amazon-ssm-agent
+          sudo systemctl start amazon-ssm-agent
+          yum update -y
+          yum install httpd -y
+          service httpd start
+          chkconfig httpd on
+          cd /var/www/html 
+          wget https://s3.ap-south-1.amazonaws.com/myfashionwebsite/index.html 
+          host_name=`curl -s http://169.254.169.254/latest/meta-data/local-hostname`
+          echo "WELCOME TO FEBATECH WEB SERVER ORDERS $host_name" > /var/www/html/orders.html
+          echo "WELCOME TO FEBATECH WEB SERVER CUSTOMERS $host_name" > /var/www/html/customers.html
+          echo "done

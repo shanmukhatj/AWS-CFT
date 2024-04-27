@@ -1,0 +1,18 @@
+
+
+CF Stackset:
+
+Before making Stack Sets we want to form a pair of IAM Roles
+In the administrator account, produce associate IAM role named AWSCloudFormationStackSetAdministrationRole. The role should have this precise name. you'll try this by making a stack from the subsequent AWS CloudFormation template, on the market on-line at
+https://s3.amazonaws.com/cloudformation-stackset-sample-templates-us-east-1/AWSCloudFormationStackSetAdministrationRole.yml.
+The role created by this template permits the subsequent policy on your administrator account.
+In every target account, produce a service role named AWSCloudFormationStackSetExecutionRole 
+that trusts the administrator account. The role should have this precise name. 
+you'll try this by making a stack from the subsequent AWS CloudFormation template,
+ on the market on-line at https://s3.amazonaws.com/cloudformation-stackset-sample-templates-us-east-1/AWSCloudFormationStackSetExecutionRole.yml.
+ after you use this template, you're prompted to produce the name of the administrator account with that your target account should have a trust relationship.
+In Cloud Formation Templates you will find Stack sets:-
+Upload a template named Vcp2.yaml (any template)  
+Deploy a  stack in account and specify an AWS account number.
+Now choose the specified Regions you want to Deploy.
+And now it will create the template in the Specified region.

@@ -1,0 +1,121 @@
+#AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Creating AWS Managed Active Directory
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Active Directory Settings
+      Parameters:
+      - DomainName
+      - MicrosoftADShortName
+      - MicrosoftADPW
+      - Edition
+      - CreateAlias
+    - Label:
+        default: VPC Settings
+      Parameters:
+      - VPCID
+      - PrivateSubnet1
+      - PrivateSubnet2
+    ParameterLabels:
+      DomainName:
+        default: Name
+      MicrosoftADShortName:
+        default: Short Name
+      MicrosoftADPW:
+        default: Active Directory Admin Password
+      Edition:
+        default: Edition
+      CreateAlias:
+        default: Create Alias
+      VPCID:
+        default: VPC ID
+      PrivateSubnet1:
+        default: Private Subnet 1
+      PrivateSubnet2:
+        default: Private Subnet 2
+
+Parameters:
+  Edition:
+    Description: >
+      The AWS Microsoft AD edition. Valid values include Standard and
+      Enterprise.
+    Type: String
+    Default: Standard
+    AllowedValues:
+    - Standard
+    - Enterprise
+  DomainName:
+    Description: >
+      A fully qualified domain name. This name will resolve inside your VPC only.
+      It does not need to be publicly resolvable. Such as corp.example.com
+    Type: String
+    Default: corp.example.com
+  MicrosoftADShortName:
+    Description: >
+      A short identifier for your domain. If you do not specify a NetBIOS name,
+      it will default to the first part of your Directory DNS name.
+    Type: String
+    Default: corp
+  CreateAlias:
+    Description: >
+      A unique alias to assign to the Microsoft Active Directory in AWS -Optional
+    Type: String
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+  MicrosoftADPW:
+    Description: >
+      The password for the default user.
+    Type: String
+    NoEcho: true
+    Default: Aws1234567$
+  PrivateSubnet1:
+    Description: >
+      A subnet within the selected VPC. Each subnet must be in
+      different Availability Zones (AZs).
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2:
+    Description: >
+      A second subnet in same VPC that is in different AZ.
+      Each subnet must be in different Availability Zones (AZs).
+    Type: AWS::EC2::Subnet::Id
+  VPCID:
+    Description: >
+      The VPC ID in which to create the Microsoft Active Directory server.
+    Type: AWS::EC2::VPC::Id
+
+Conditions:
+  cAlias: !Equals [ !Ref CreateAlias, 'true' ]
+
+Resources:
+  MSDirectory:
+    Type: AWS::DirectoryService::MicrosoftAD
+    Properties:
+      CreateAlias: !Ref CreateAlias
+      Edition: !Ref Edition
+      Name: !Ref DomainName
+      Password: !Ref MicrosoftADPW
+      ShortName: !Ref MicrosoftADShortName
+      VpcSettings:
+        SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+        VpcId: !Ref VPCID
+
+Outputs:
+  DirectoryID:
+    Description: ID of the MS Directory
+    Value: !Ref MSDirectory
+  PrimaryDNS:
+    Description: DNS IPs of the MS Directory
+    Value: !Select [ '0', !GetAtt MSDirectory.DnsIpAddresses ]
+  SecondaryDNS:
+    Description: DNS IPs of the MSDirectory
+    Value: !Select [ '1', !GetAtt MSDirectory.DnsIpAddresses ]
+  DirectoryAlias:
+    Description: URL for the alias
+    Condition: cAlias
+    Value: !GetAtt MSDirectory.Alias

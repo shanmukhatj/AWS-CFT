@@ -1,0 +1,11 @@
+Amazon linux2
+
+This Template initially creates an EC2 instance for Ubuntu Machine. Here we are attaching some dependencies to load instances with these following prerequisites.
+Tomcat
+Jenkins
+Java
+GIT
+Docker
+HTTP 
+All these will be preloaded in  Ubuntu Machine on Launching this Template.
+

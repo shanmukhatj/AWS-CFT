@@ -1,0 +1,7 @@
+1.Root stack is the main stack
+2.vpc stack and security group stacks are nested stacks
+3.Now upload these vpc.yaml and securitygroup.yaml in a s3 bucket
+4.On uploading in s3 bucket you will get two url's of vpc.yaml and securitygroup.yaml attach these url's to root stack
+in template url section in vpc stack and security stack
+5.deploy this root stack template in cloud formation
+6.After deploying you will get one root stack and two nested stacks

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  UserName:
+    Description: Enter username
+    Type: String
+    Default: user
+  Bundle:
+    Description: >
+        1. Standard with Windows 10
+        2. Standard with Amazon Linux 2
+    Type: String
+    AllowedValues:
+      - "wsb-8vbljg4r6"
+      - "wsb-clj85qzj1"
+  myDirectory:
+    Description: select one AD
+    Type: String
+
+Resources:
+  TestWorkspace1:
+    Type: AWS::WorkSpaces::Workspace
+    Properties:
+      BundleId: !Ref Bundle
+      DirectoryId: !Ref myDirectory
+      UserName:
+        Ref: UserName
+      RootVolumeEncryptionEnabled: false
+      UserVolumeEncryptionEnabled: false
+Outputs:
+  Username:
+    Value:
+      Fn::Join:
+      - ''
+      - - Ref: UserName
+    Description: Workspaces Username
+  StaticMessage:
+    Value: In case of first usage, you will receive a initial password for the Amazon
+      Workspaces Client separately, once the workspace has been created.
+    Description: Workspaces note
